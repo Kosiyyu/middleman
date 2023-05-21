@@ -1,12 +1,13 @@
-import React from 'react';
+import React from 'react'
 
 const Result = ({ data }) => {
-  const { individualProfits, optimalTransport, totalCost, income, profit } = data;
+  const { individualProfits, optimalTransport, totalCost, income, profit } = data
+
 
   return (
-    <div>
+    <div className="container">
       <h2>Individual Profits</h2>
-      <table>
+      <table className="table table-bordered">
         <tbody>
           {individualProfits.map((row, rowIndex) => (
             <tr key={rowIndex}>
@@ -17,9 +18,8 @@ const Result = ({ data }) => {
           ))}
         </tbody>
       </table>
-
       <h2>Optimal Transport</h2>
-      <table>
+      <table className="table table-bordered">
         <tbody>
           {optimalTransport.map((row, rowIndex) => (
             <tr key={rowIndex}>
@@ -30,17 +30,25 @@ const Result = ({ data }) => {
           ))}
         </tbody>
       </table>
-
-      <h2>Total Cost</h2>
-      <p>{totalCost}</p>
-
-      <h2>Income</h2>
-      <p>{income}</p>
-
-      <h2>Profit</h2>
-      <p>{profit}</p>
+      <h2>Financial result</h2>
+      <table className="table table-bordered">
+        <tbody>
+          <tr>
+            <th>Total Cost</th>
+            <td>{totalCost}</td>
+          </tr>
+          <tr>
+            <th>Income</th>
+            <td>1{income}</td>
+          </tr>
+          <tr>
+            <th>Profit</th>
+            <td>{profit}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  );
-};
+  )
+}
 
-export default Result;
+export default Result

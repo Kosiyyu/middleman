@@ -21,34 +21,39 @@ const Table = ({ onSendData, dataLimit }) => {
   }
 
   return (
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th>Value</th>
+    <div className="container">
+    <table className="table table-bordered">
+      <thead className="table-dark">
+        <tr>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((value, index) => (
+          <tr key={index}>
+            <td>{value}</td>
           </tr>
-        </thead>
-        <tbody>
-          {data.map((value, index) => (
-            <tr key={index}>
-              <td>{value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div>
-        <input
-          type="number"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-        />
-        <button onClick={handleAddData} disabled={data.length >= dataLimit}>
-          Add
-        </button>
-        <button onClick={handleSendData} disabled={data.length !== dataLimit}>Apply</button>
-        <button onClick={handleReset}>Reset</button>
-      </div>
+        ))}
+      </tbody>
+    </table>
+    <div className="d-flex justify-content-center">
+      <input
+        type="number"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        className="form-control me-2"
+      />
+      <button onClick={handleAddData} disabled={data.length >= dataLimit} className="btn btn-primary me-2">
+        Add
+      </button>
+      <button onClick={handleSendData} disabled={data.length !== dataLimit} className="btn btn-primary me-2">
+        Apply
+      </button>
+      <button onClick={handleReset} className="btn btn-secondary">
+        Reset
+      </button>
     </div>
+  </div>
   )
 }
 
