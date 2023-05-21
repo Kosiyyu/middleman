@@ -16,6 +16,33 @@ public class DataController {
     public ResponseEntity<ResponseData> post(@RequestBody RequestData requestData){
         //do sth with requestData
 
+
+//        System.out.println("Demand:");
+//        for(int i : requestData.getDemand()){
+//            System.out.println(i + " ");
+//        }
+//        System.out.println("Selling Cost:");
+//        for(int i : requestData.getSellingCost()){
+//            System.out.println(i + " ");
+//        }
+//        System.out.println("Supply:");
+//        for(int i : requestData.getSupply()){
+//            System.out.println(i + " ");
+//        }
+//        System.out.println("Purchase Cost:");
+//        for(int i : requestData.getPurchaseCost()){
+//            System.out.println(i + " ");
+//        }
+//        System.out.println("Transport Cost:");
+//        for(int i = 0; i < requestData.getTransportCost().length; i++) {
+//            for(int j = 0; j < requestData.getTransportCost()[i].length; j++) {
+//                System.out.print(requestData.getTransportCost()[i][j] + " ");
+//            }
+//            System.out.println();
+//        }
+
+
+
         //service todo
 
         //dummy response
