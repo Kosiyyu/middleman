@@ -1,4 +1,8 @@
+import java.util.ArrayList;
+import static java.util.Arrays.stream;
 import java.util.LinkedList;
+import java.util.List;
+import static java.util.stream.Collectors.toCollection;
 
 public class Middleman {
 
@@ -45,13 +49,7 @@ public class Middleman {
 
 
     static void init(int[] src, int[] dst, double[][] transportCosts1, double[] purchaseCosts1, double[] sellingPrice1 ) {
-        int numSources = 2; // Liczba dostawców
-        int numDestinations = 3; // Liczba odbiorców
-        transportCosts = new double[numSources][numDestinations];
-        purchaseCosts = new double[numSources];
-        sellingPrices = new double[numDestinations];
-        matrix = new Shipment[numSources][numDestinations]; // + 1 Fiction Sender and Fiction Receiver
-        matrixProfit = new Profit[numSources][numDestinations];
+
 //        src[0] = 20;
 //        src[1] = 30; // Podaż od dostawców
 //        dst[0] = 10;
@@ -61,25 +59,116 @@ public class Middleman {
         supply = src;
         demand = dst;
 
+        // fix imbalance
+        int totalSrc = 0;
+        for (int s : src)
+            totalSrc += s;
+        int totalDst = 0;
+        for (int s : dst)
+            totalDst += s;
+        if (totalSrc > totalDst) {
+            demand = new int[4];
+            demand[0] = dst[0];
+            demand[1] = dst[1];
+            demand[2] = dst[2];
+            demand[3] = totalSrc - totalDst;
+            supply = new int[3];
+            supply[0] = src[0];
+            supply[1] = src[1];
+            supply[2] = 0;
+        } else if (totalDst > totalSrc) {
+            demand = new int[4];
+            demand[0] = dst[0];
+            demand[1] = dst[1];
+            demand[2] = dst[2];
+            demand[3] = 0;
+            supply = new int[3];
+            supply[0] = src[0];
+            supply[1] = src[1];
+            supply[2] = totalDst - totalSrc;
+        }
+        transportCosts = new double[supply.length][demand.length];
+        if (supply.length != src.length || demand.length != dst.length) {
+            transportCosts[0][0] = transportCosts1[0][0];
+            transportCosts[0][1] = transportCosts1[0][1];
+            transportCosts[0][2] = transportCosts1[0][2];
+            transportCosts[0][3] = 0;
+            transportCosts[1][0] = transportCosts1[1][0];
+            transportCosts[1][1] = transportCosts1[1][1];
+            transportCosts[1][2] = transportCosts1[1][2];
+            transportCosts[1][3] = 0;
+            transportCosts[2][0] = sellingPrice1[0];
+            transportCosts[2][1] = sellingPrice1[1];
+            transportCosts[2][2] = sellingPrice1[2];
+            transportCosts[2][3] = 0;
 
-        // Jednostkowe koszty transportu
-        transportCosts[0][0] = 8;
-        transportCosts[0][1] = 14;
-        transportCosts[0][2] = 17;
-        transportCosts[1][0] = 12;
-        transportCosts[1][1] = 9;
-        transportCosts[1][2] = 19;
+            purchaseCosts = new double[3];
+            purchaseCosts[0] = purchaseCosts1[0];
+            purchaseCosts[1] = purchaseCosts1[1];
+            purchaseCosts[2] = 0;
+            sellingPrices = new double[4];
+            sellingPrices[0] = sellingPrice1[0];
+            sellingPrices[1] = sellingPrice1[1];
+            sellingPrices[2] = sellingPrice1[2];
+            sellingPrices[3] = 0;
+        }
+        else
+        {
+            transportCosts = transportCosts1;
+            purchaseCosts = purchaseCosts1;
+            sellingPrices = sellingPrice1;
+        }
 
-        // Jednostkowe koszty zakupu
-        purchaseCosts[0] = 10;
-        purchaseCosts[1] = 12;
-
-        // Ceny sprzedaży
-        sellingPrices[0] = 30;
-        sellingPrices[1] = 25;
-        sellingPrices[2] = 30;
-
+        matrix = new Shipment[supply.length][demand.length]; // + 1 Fiction Sender and Fiction Receiver
+        matrixProfit = new Profit[supply.length][demand.length];
         fullQuantityOfDemand = 0;
+        System.out.println("transport costs");
+        for (int r = 0, northwest = 0; r < supply.length; r++) {
+            for (int c = 0; c < demand.length; c++) {
+                System.out.print(transportCosts[r][c] + " ");
+            }
+            System.out.print("\n");
+        }
+        System.out.println("PurchaseCost");
+        for (int r = 0, northwest = 0; r < supply.length; r++)
+            System.out.print(purchaseCosts[r] + " ");
+        System.out.println("\n");
+        System.out.println("Selling Price");
+        for (int c = 0; c < demand.length; c++) {
+            System.out.print(sellingPrices[c] + " ");
+        }
+        System.out.println("\n");
+        for (int r = 0, northwest = 0; r < supply.length; r++)
+            for (int c = 0; c < demand.length; c++) {
+                matrix[r][c] = new Shipment(0, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c);
+            }
+        System.out.println("Profit matrix");
+        for (int r = 0; r < supply.length; r++)
+        {
+            for (int c = 0; c < demand.length; c++) {
+                if(c == demand.length - 1)
+                    matrixProfit[r][c] = new Profit(new Shipment(matrix[r][c].quantity, 0, 0, 0, r, c), r, c);
+                else if(matrix[r][c] != null)
+                    matrixProfit[r][c] = new Profit(matrix[r][c], r, c);
+                //else
+                //    matrixProfit[r][c] = new Profit(new Shipment(-5, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c), r, c);
+                if(matrixProfit[r][c] != null)
+                    System.out.print(matrixProfit[r][c].profitValue + " ");
+                else
+                    System.out.print("- ");
+            }
+            System.out.println("");
+        }
+        System.out.println("\n");
+        for (int r = 0; r < supply.length; r++)
+        {
+            for (int c = 0; c < demand.length; c++) {
+                    matrixProfit[r][c].shipment =  null;
+                //else
+                //    matrixProfit[r][c] = new Profit(new Shipment(-5, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c), r, c);
+            }
+            System.out.println("");
+        }
     }
 
     public static int findMaxValuable(Profit[] arr)
@@ -101,27 +190,10 @@ public class Middleman {
     }
 
     static void maxElementMatrix() {
-        for (int r = 0, northwest = 0; r < supply.length; r++)
-            for (int c = 0; c < demand.length; c++) {
-                matrix[r][c] = new Shipment(0, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c);
-                if(r == 0)
-                    fullQuantityOfDemand += demand[c];
-            }
-        for (int r = 0; r < supply.length; r++)
-        {
-            for (int c = 0; c < demand.length; c++) {
-                if(matrix[r][c] != null)
-                    matrixProfit[r][c] = new Profit(matrix[r][c], r, c);
-                else
-                    matrixProfit[r][c] = new Profit(new Shipment(0, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c), r, c);
-                System.out.print(matrixProfit[r][c].profitValue + " ");
-            }
-            System.out.println("");
-        }
-        System.out.println("\n");
         Profit[] arrTmp;
         for (int r = 0, northwest = 0; r < supply.length; r++)
         {
+            //System.out.println("Supply przed " + supply[r]);
             //System.out.println("r = " + r);
             arrTmp = matrixProfit[r];
             for (int c = northwest; c < demand.length; c++) {
@@ -130,13 +202,20 @@ public class Middleman {
                 {
                     arrTmp[suitableDemand].profitValue = -Double.MAX_VALUE;
                     suitableDemand = findMaxValuable(arrTmp);
+                    if(demand.length == 4)
+                        if(demand[0] == 0 && demand[1] == 0 && demand[2] == 0 && demand[3] == 0 || suitableDemand == -1)
+                            break;
                     if(demand[0] == 0 && demand[1] == 0 && demand[2] == 0 || suitableDemand == -1)
                         break;
                 }
 
                 int quantity = Math.min(supply[r], demand[suitableDemand]);
+                //System.out.println("index = " + suitableDemand + " quantity " + quantity);
                 if (quantity > 0) {
-                    matrix[r][suitableDemand] = new Shipment(quantity, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c);
+                    if(demand.length - 1 == c)
+                        matrixProfit[r][suitableDemand].shipment = new Shipment(quantity, 0, 0, 0, r, c);
+                    else
+                        matrixProfit[r][suitableDemand].shipment = new Shipment(quantity, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c);
                     supply[r] -= quantity;
                     demand[suitableDemand] -= quantity;
                     //System.out.println(suitableDemand + "supply = " + supply[r]);
@@ -152,176 +231,86 @@ public class Middleman {
         for (int r = 0; r < supply.length; r++)
         {
             for (int c = 0; c < demand.length; c++) {
-                if(matrix[r][c] != null)
-                    System.out.print(matrix[r][c].quantity + " ");
+                if(matrixProfit[r][c].shipment != null)
+                    System.out.print(matrixProfit[r][c].shipment.quantity + " ");
                 else
-                    System.out.print(0 + " ");
-            }
-            System.out.println("");
-        }
-    }
-
-    static void initShipmentMatrixWithFiction()
-    {
-        System.out.println("\n\n");
-        shipmentMatrixWithFiction = new Shipment[supply.length + 1][demand.length + 1];
-
-        for(int r = 0; r < supply.length; r++)
-        {
-            for(int c = 0; c < demand.length; c++)
-            {
-                shipmentMatrixWithFiction[r][c] = matrix[r][c];
-                if(r == 0)
-                {
-                    shipmentMatrixWithFiction[supply.length][c] = new Shipment(demand[c], 0, 0, 0, supply.length, c);
-                }
-            }
-            shipmentMatrixWithFiction[r][demand.length] = new Shipment(supply[r], 0, 0, 0, r, demand.length);
-        }
-        shipmentMatrixWithFiction[supply.length][demand.length] = new Shipment( fullQuantityOfDemand - shipmentMatrixWithFiction[supply.length][0].quantity - shipmentMatrixWithFiction[supply.length][1].quantity -  shipmentMatrixWithFiction[supply.length][2].quantity - shipmentMatrixWithFiction[0][demand.length].quantity - shipmentMatrixWithFiction[1][demand.length].quantity,
-                0, 0, 0, supply.length, demand.length);
-        for (int r = 0; r <= supply.length; r++)
-        {
-            for (int c = 0; c <= demand.length; c++) {
-                if(shipmentMatrixWithFiction[r][c] != null)
-                    System.out.print(shipmentMatrixWithFiction[r][c].quantity + " ");
-                else
-                    System.out.print(0 + " ");
+                    System.out.print("x ");
             }
             System.out.println("");
         }
 
-    }
-
-    public static void calcAlfaAndBeta()
-    {
-        alfa = new double[supply.length + 1];
-        beta = new double[demand.length + 1];
-        for(int i = 0; i < alfa.length - 1; i++)
-        {
-            alfa[i] = -Double.MAX_VALUE;
-        }
-        for(int i = 0; i < beta.length - 1; i++)
-        {
-            beta[i] = -Double.MAX_VALUE;
-        }
-        alfa[alfa.length - 1] = 0;
-        beta[beta.length - 1] = 0;
-        boolean isNotBase = true;
-        for(int c = 0; c < demand.length - 1; c++)
-        {
-            isNotBase = true;
-            for(int r = 0; r < supply.length; r++)
-            {
-                if(shipmentMatrixWithFiction[r][c].quantity == 0)
-                {
-                    isNotBase = false;
-                    break;
-                }
-            }
-            if(isNotBase)
-            {
-                beta[c] = 0;
-            }
-        }
-        //System.out.println(alfa.length + " " + beta.length);
-        for(int r = supply.length - 1; r >= 0; r--)
-        {
-            for(int c = 0; c < demand.length - 1; c++)
-            {
-                if(shipmentMatrixWithFiction[r][c].quantity == 0)
-                {
-                    if(alfa[r] == -Double.MAX_VALUE && beta[c] != -Double.MAX_VALUE)
-                    {
-                        if(r != matrixProfit.length && matrixProfit[r][c] != null)
-                            alfa[r] = matrixProfit[r][c].profitValue - beta[c];
-                        else
-                            alfa[r] = - beta[c];
-                    }
-                    if(alfa[r] != -Double.MAX_VALUE && beta[c] == -Double.MAX_VALUE)
-                    {
-                        if(r != matrixProfit.length && matrixProfit[r][c] != null)
-                            beta[c] = matrixProfit[r][c].profitValue - alfa[r];
-                        else
-                            beta[c] = - alfa[r];
-                    }
-                }
-            }
-        }
-        System.out.print("Alfa ");
-        for(int index = 0; index < alfa.length; index++)
-        {
-            System.out. print(alfa[index] + " ");
-        }
-        System.out.println("\n\n");
-        System.out.print("Beta ");
-        for(int index = 0; index < beta.length; index++)
-        {
-            System.out. print(beta[index] + " ");
-        }
-        System.out.println("\n\n");
-    }
-
-
-
-
-//    static void steppingStone() {
-//        double maxReduction = 0;
-//        Shipment[] move = null;
-//        Shipment leaving = null;
-//
-//        fixDegenerateCase();
-//
-//        for (int r = 0; r < supply.length; r++) {
+//        for (int r = 0; r < supply.length; r++)
+//        {
 //            for (int c = 0; c < demand.length; c++) {
-//                if (matrix[r][c] != null)
-//                    continue;
-//
-//                Shipment trial = new Shipment(0, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c);
-//                Shipment[] path = getClosedPath(trial);
-//
-//                double reduction = 0;
-//                double lowestQuantity = Integer.MAX_VALUE;
-//                Shipment leavingCandidate = null;
-//
-//                boolean plus = true;
-//                for (Shipment s : path) {
-//                    if (plus) {
-//                        reduction += s.costPerUnit;
-//                    } else {
-//                        reduction -= s.costPerUnit;
-//                        if (s.quantity < lowestQuantity) {
-//                            leavingCandidate = s;
-//                            lowestQuantity = s.quantity;
-//                        }
-//                    }
-//                    plus = !plus;
-//                }
-//                if (reduction < maxReduction) {
-//                    move = path;
-//                    leaving = leavingCandidate;
-//                    maxReduction = reduction;
-//                }
+//                    matrixProfit[r][c].shipment = matrix[r][c];
 //            }
 //        }
-//
-//        if (move != null && leaving != null) {
-//            double q = leaving.quantity;
-//            boolean plus = true;
-//            for (Shipment s : move) {
-//                s.quantity += plus ? q : -q;
-//                matrix[s.r][s.c] = s.quantity == 0 ? null : s;
-//                plus = !plus;
-//            }
-//            steppingStone();
-//        }
-//    }
+    }
 
-    static LinkedList<Shipment> matrixToList() {
-        LinkedList<Shipment> list = new LinkedList<>();
-        for (Shipment[] row : matrix) {
-            for (Shipment s : row) {
-                if (s != null) {
+    static void steppingStone() {
+        double maxIncrease = 0;
+        Profit[] move = null;
+        Profit leaving = null;
+
+        fixDegenerateCase();
+//        for(int r = 0; r < supply.length; r++) {
+//            for(int c = 0; c < demand.length; c++)
+//            {
+//                matrixProfit[r][c] = new Profit(matrix[r][c], r, c);
+//            }
+//        }
+        for (int r = 0; r < supply.length; r++) {
+            for (int c = 0; c < demand.length; c++) {
+                if (matrixProfit[r][c] != null && matrixProfit[r][c].shipment != null)
+                    continue;
+
+                Profit trial = new Profit(new Shipment(0, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c), r, c);
+                Profit[] path = getClosedPath(trial);
+
+                double increase = 0;
+                double lowestQuantity = Integer.MAX_VALUE;
+                Profit leavingCandidate = null;
+
+                boolean plus = true;
+                for (Profit s : path) {
+                    if (plus) {
+                        increase += s.profitValue;
+                    } else {
+                        increase -= s.profitValue;
+                        if (s.shipment.quantity < lowestQuantity) {
+                            leavingCandidate = s;
+                            lowestQuantity = s.shipment.quantity;
+                            System.out.println("lowestQuantity changed: " + lowestQuantity);
+                        }
+                    }
+                    plus = !plus;
+                }
+                if (increase > maxIncrease) {
+                    move = path;
+                    leaving = leavingCandidate;
+                    maxIncrease = increase;
+                }
+            }
+        }
+
+        if (move != null && leaving != null) {
+            double q = leaving.shipment.quantity;
+            boolean plus = true;
+            for (Profit s : move) {
+                s.shipment.quantity += plus ? q : -q;
+                matrixProfit[s.r][s.c] = s.shipment.quantity == 0 ? null : s;
+                plus = !plus;
+            }
+            steppingStone();
+        }
+    }
+
+    static LinkedList<Profit> matrixToList() {
+        LinkedList<Profit> list = new LinkedList<>();
+        for (Profit[] row : matrixProfit) {
+            for (Profit s : row) {
+                if (s != null && s.shipment != null) {
+                    System.out.println("matrixToList worked");
                     list.add(s);
                 }
             }
@@ -329,31 +318,34 @@ public class Middleman {
         return list;
     }
 
-    static Shipment[] getClosedPath(Shipment s) {
-        LinkedList<Shipment> path = matrixToList();
+    static Profit[] getClosedPath(Profit s) {
+        LinkedList<Profit> path = matrixToList();
         path.addFirst(s);
 
         // remove (and keep removing) elements that do not have a
         // vertical AND horizontal neighbor
         while (path.removeIf(e -> {
-            Shipment[] nbrs = getNeighbors(e, path);
+            System.out.println("getClosedPath worked");
+            Profit[] nbrs = getNeighbors(e, path);
             return nbrs[0] == null || nbrs[1] == null;
         }));
 
         // place the remaining elements in the correct plus-minus order
-        Shipment[] stones = path.toArray(new Shipment[path.size()]);
-        Shipment prev = s;
+        Profit[] stones = path.toArray(new Profit[path.size()]);
+        Profit prev = s;
         for (int i = 0; i < stones.length; i++) {
+            System.out.println("getClosedPath 2 worked");
             stones[i] = prev;
             prev = getNeighbors(prev, path)[i % 2];
         }
         return stones;
     }
     //
-    static Shipment[] getNeighbors(Shipment s, LinkedList<Shipment> lst) {
-        Shipment[] nbrs = new Shipment[2];
-        for (Shipment o : lst) {
-            if (o != s) {
+    static Profit[] getNeighbors(Profit s, LinkedList<Profit> lst) {
+        Profit[] nbrs = new Profit[2];
+        for (Profit o : lst) {
+            if (o.shipment != s.shipment) {
+                //System.out.println("getNeighbors worked");
                 if (o.r == s.r && nbrs[0] == null)
                     nbrs[0] = o;
                 else if (o.c == s.c && nbrs[1] == null)
@@ -369,27 +361,29 @@ public class Middleman {
         final double eps = Double.MIN_VALUE;
 
         if (supply.length + demand.length - 1 != matrixToList().size()) {
-
+            System.out.println("fixDegenerateCase worked");
             for (int r = 0; r < supply.length; r++)
                 for (int c = 0; c < demand.length; c++) {
-                    if (matrix[r][c] == null) {
-                        Shipment dummy = new Shipment(eps, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c);
+                    if (matrixProfit[r][c].shipment == null) {
+                        Profit dummy = new Profit(new Shipment(eps, transportCosts[r][c], purchaseCosts[r], sellingPrices[c], r, c), r, c);
                         if (getClosedPath(dummy).length == 0) {
-                            matrix[r][c] = dummy;
+                            matrixProfit[r][c] = dummy;
                             return;
                         }
                     }
                 }
         }
+        else
+            System.out.println("fixDegenerateCase not worked");
     }
 
     static double calculateRevenue() {
         double revenue = 0;
 
-        for (Shipment[] row : matrix) {
-            for (Shipment s : row) {
-                if (s != null) {
-                    revenue += s.sellingPrice * s.quantity;
+        for (Profit[] row : matrixProfit) {
+            for (Profit s : row) {
+                if (s != null && s.shipment != null) {
+                    revenue += s.shipment.sellingPrice * s.shipment.quantity;
                 }
             }
         }
@@ -400,10 +394,10 @@ public class Middleman {
     static double calculateTotalCost() {
         double totalCost = 0;
 
-        for (Shipment[] row : matrix) {
-            for (Shipment s : row) {
-                if (s != null) {
-                    totalCost += s.costPerUnit * s.quantity;
+        for (Profit[] row : matrixProfit) {
+            for (Profit s : row) {
+                if (s != null && s.shipment != null) {
+                    totalCost += (s.shipment.costPerUnit + s.shipment.purchaseCost) * s.shipment.quantity;
                 }
             }
         }
@@ -418,25 +412,25 @@ public class Middleman {
     static void printMatrix() {
         System.out.println("Matrix:");
 
-        for (Shipment[] row : matrix) {
-            for (Shipment s : row) {
-                if (s != null) {
-                    System.out.printf("%6.1f ", s.quantity);
+        for (Profit[] row : matrixProfit) {
+            for (Profit s : row) {
+                if (s != null && s.shipment != null) {
+                    System.out.printf("%6.1f ", s.shipment.quantity);
                 } else {
-                    System.out.print("   -   ");
+                    System.out.print("   0   ");
                 }
             }
             System.out.println();
         }
     }
 
-//    static void printResults() {
-//        System.out.println("\nResults:");
-//
-//        System.out.println("Revenue: " + calculateRevenue());
-//        System.out.println("Total Cost: " + calculateTotalCost());
-//        System.out.println("Profit: " + calculateProfit());
-//
+    static void printResults() {
+        System.out.println("\nResults:");
+
+        System.out.println("Revenue: " + calculateRevenue());
+        System.out.println("Total Cost: " + calculateTotalCost());
+        System.out.println("Profit: " + calculateProfit());
+
 //        System.out.println("\nPurchase Costs:");
 //        for (int r = 0; r < supply.length; r++) {
 //            System.out.println("Supplier " + (r + 1) + ": " + purchaseCosts[r]);
@@ -446,21 +440,21 @@ public class Middleman {
 //        for (int c = 0; c < demand.length; c++) {
 //            System.out.println("Customer " + (c + 1) + ": " + sellingPrices[c]);
 //        }
-//    }
+    }
 
     public static void main(String[] args) {
         int[] src = {20, 30};
         int[] dst = {10, 28, 27};
+        double[][] transportCosts = {{ 8, 14, 17 }, { 12, 9, 19 }};
+        double[] purchaseCosts = { 10, 12 };
+        double[] sellingPrice = { 30, 25, 30 };
 
-        double[][] transportCosts1 = {};
-        double[] purchaseCosts1 = {};
-        double[] sellingPrice1 = {};
-        init(src, dst, transportCosts1, sellingPrice1, purchaseCosts1);
+        init(src, dst, transportCosts, purchaseCosts, sellingPrice);
         maxElementMatrix();
-        initShipmentMatrixWithFiction();
-        //steppingStone();
-        calcAlfaAndBeta();
-        //printMatrix();
-//        printResults();
+        //initShipmentMatrixWithFiction();
+        steppingStone();
+        //calcAlfaAndBeta();
+        printMatrix();
+        printResults();
     }
 }
