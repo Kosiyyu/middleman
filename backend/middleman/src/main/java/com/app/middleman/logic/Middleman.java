@@ -74,7 +74,7 @@ public class Middleman {
 
     public static class Profit {
         int profitValue;
-        static Shipment shipment;
+        Shipment shipment;
         int r, c;
 
         Profit(Shipment shipment, int r, int c) {
