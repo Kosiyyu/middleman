@@ -39,7 +39,7 @@ const Result = ({ data }) => {
           </tr>
           <tr>
             <th>Income</th>
-            <td>1{income}</td>
+            <td>{income}</td>
           </tr>
           <tr>
             <th>Profit</th>
