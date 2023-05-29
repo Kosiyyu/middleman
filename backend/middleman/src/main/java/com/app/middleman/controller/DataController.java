@@ -21,65 +21,13 @@ public class DataController {
 
     @PostMapping
     public ResponseEntity<ResponseData> post(@RequestBody RequestData requestData){
-////print
-//        System.out.println("Demand:");
-//        for(int i : requestData.getDemand()){
-//            System.out.println(i + " ");
-//        }
-//        System.out.println("Selling Cost:");
-//        for(int i : requestData.getSellingCost()){
-//            System.out.println(i + " ");
-//        }
-//        System.out.println("Supply:");
-//        for(int i : requestData.getSupply()){
-//            System.out.println(i + " ");
-//        }
-//        System.out.println("Purchase Cost:");
-//        for(int i : requestData.getPurchaseCost()){
-//            System.out.println(i + " ");
-//        }
-//        System.out.println("Transport Cost:");
-//        for(int i = 0; i < requestData.getTransportCost().length; i++) {
-//            for(int j = 0; j < requestData.getTransportCost()[i].length; j++) {
-//                System.out.print(requestData.getTransportCost()[i][j] + " ");
-//            }
-//            System.out.println();
-//        }
+        try {
 
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //do sth with requestData
-        //w serwiskei trzeba dodwac logike od calulate
+            return ResponseEntity.status(200).body(dataService.calculate(requestData));
 
-//        try {
-//
-//            return ResponseEntity.status(400).body(dataService.calculate(requestData));
-//
-//        }
-//        catch (Exception e){
-//            return ResponseEntity.status(400).body(null);
-//        }
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        //dummy response
-        int[][] individualProfits = {
-                {12, 1, 3},
-                {6, 4, -1}
-        };
-
-        int[][] optimalTransport = {
-                {10, 0, 10},
-                {0, 13, 17}
-        };
-
-        int totalCost = 1250;
-        int income = 1435;
-        int profit = 185;
-
-        ResponseData responseData = new ResponseData(individualProfits, optimalTransport, totalCost, income, profit);
-        return ResponseEntity.status(201).body(responseData);
+        }
+        catch (Exception e){
+            return ResponseEntity.status(400).body(null);
+        }
     }
 }
