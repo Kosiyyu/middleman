@@ -219,7 +219,7 @@ public class Middleman {
         //for(Profit profit : arr)
         //    System.out.println(profit.profitValue);
         int index = -1;
-        double maxValuable = -Double.MAX_VALUE;
+        int maxValuable = -Integer.MAX_VALUE;
         for (int i = 0; i < arr.length; i++) {
             if (maxValuable != Math.max(maxValuable, arr[i].profitValue)) {
                 maxValuable = Math.max(maxValuable, arr[i].profitValue);
@@ -249,7 +249,7 @@ public class Middleman {
                 }
 
                 int quantity = Math.min(supply[r], demand[suitableDemand]);
-                //System.out.println("index = " + suitableDemand + " quantity " + quantity);
+                System.out.println("index = " + suitableDemand + " quantity " + quantity);
                 if (quantity > 0) {
                     if (demand.length - 1 == c)
                         matrixProfit[r][suitableDemand].shipment = new Shipment(quantity, 0, 0, 0, r, c);
@@ -266,7 +266,6 @@ public class Middleman {
                 arrTmp[suitableDemand].profitValue = -Integer.MAX_VALUE;
             }
         }
-
         for (int r = 0; r < supply.length; r++) {
             for (int c = 0; c < demand.length; c++) {
                 if (matrixProfit[r][c].shipment != null)
@@ -325,6 +324,19 @@ public class Middleman {
                     matrixProfitTmp[r][demand.length - 1].shipment.quantity += matrixProfitTmp[r][c].shipment.quantity;
                     matrixProfitTmp[supply.length - 1][c].shipment.quantity += matrixProfitTmp[r][c].shipment.quantity;
                     matrixProfitTmp[r][c].shipment.quantity = 0;
+                }
+                else if(matrixProfitTmp[0][c].profitValue < matrixProfitTmp[1][c].profitValue && matrixProfitTmp[0][c].shipment.quantity > matrixProfitTmp[1][c].shipment.quantity && supply[1] > 0)
+                {
+                    if(supply[1] >= matrixProfitTmp[0][c].shipment.quantity)
+                    {
+                        matrixProfitTmp[1][c].shipment.quantity += matrixProfitTmp[0][c].shipment.quantity;
+                        matrixProfitTmp[0][c].shipment.quantity = 0;
+                    }
+                    else if(supply[0] < matrixProfitTmp[0][c].shipment.quantity)
+                    {
+                        matrixProfitTmp[1][c].shipment.quantity += supply[0];
+                        matrixProfitTmp[0][c].shipment.quantity -= supply[0];
+                    }
                 }
                 income += matrixProfitTmp[r][c].shipment.sellingPrice * matrixProfitTmp[r][c].shipment.quantity;
                 profit += matrixProfitTmp[r][c].profitValue * matrixProfitTmp[r][c].shipment.quantity;
